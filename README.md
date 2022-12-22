@@ -1,10 +1,13 @@
 Work in progress not a finished work
 
+This will be my first time working with SourcePawn and I have never learned to code in any language. I know a little bit of Windows CMD batch and thats it.
+Don't look at my code and expect the best I don't know proper ways so I just find a way.
+
 # CS:S / CSGO Give Weapons
 - Give a weapon or item to a player from a command.  
 - This plugin is edited originally from [Kiske's give weapon](https://forums.alliedmods.net/showthread.php?t=195476).  
 - Forked updated by Kento https://github.com/rogeraabbccdd/CSGO-GiveWeapons
-- This I got my noob never learned to code hands on it
+- Then I got my noob never learned to code hands on it...
 
 # This fork adds
 - all the CS:S weapons that were missing to make CS:S compatible
@@ -14,6 +17,8 @@ Work in progress not a finished work
 - Planned - Chat input option
 - Planned - Non admin can give to themself(if enabled)
 - Planned - Cost for giving to yourself option. Can be marked up in cost from base price or free
+- Planned - Plugin engine checking
+- Maybe - Separate weapon/item lists per game would help on partial substr input for a few entities
 
 ## Console Commands for admins
 - `sm_give` Gives the usage and options in console.
