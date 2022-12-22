@@ -13,6 +13,7 @@ Don't look at my code and expect the best I don't know proper ways so I just fin
 - all the CS:S weapons that were missing to make CS:S compatible
 - entity checking if player has a weapon/item in the slot the plugin is trying to give to. 
 - Drops and removes that weapon/item before giving new
+- Code comments for days otherwise i have no clue whats going on
 - Planned - Option to drop but not remove item from game
 - Planned - Chat input option
 - Planned - Non admin can give to themself(if enabled)
