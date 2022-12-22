@@ -38,9 +38,13 @@ Don't look at my code and expect the best I don't know proper ways so I just fin
 - *Partials substrings work if not overlapping other entity name*
 - *If in game entity name is not on list plugin needs update*
 For example, `sm_give @all healthshot` gives all player `weapon_healthshot`, including bots.
+
+## To compile so you can add to your server
 <details>
   <summary>Click to show</summary>
-	Gotcha	
+	- use the compiler include with the sourcemod file
+	- use the source mod website https://www.sourcemod.net/compiler.php
+	- note the sourcemod version on your server vs. the compiler version
 </details>
 
 ## Credits
