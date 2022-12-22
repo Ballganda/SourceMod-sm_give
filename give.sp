@@ -22,7 +22,7 @@ public void OnPluginStart()
 
 // Declare a global char array named "g_entity"
 // Initialize the array with a list of strings representing different entity names in the game
-// want to figure out how to store {{entity name, weaponslot, ammo offset, ammo amount},...}
+// working array stores {{entity name, weaponslot, ammo offset, ammo amount},...}
 char g_entity[][][] = {
 	{"item_cutters","-1","-1","1"}, //csgo
 	{"item_defuser","-1","-1","1"},
