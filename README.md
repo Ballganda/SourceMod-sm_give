@@ -1,10 +1,10 @@
 Work in progress not a finished work
 
 # CS:S / CSGO Give Weapons
-Give a weapon or item to a player from a command.  
-This plugin is edited originally from [Kiske's give weapon](https://forums.alliedmods.net/showthread.php?t=195476).  
-Forked updated by Kento https://github.com/rogeraabbccdd/CSGO-GiveWeapons
-This I got my noob never learned to code hands on it
+- Give a weapon or item to a player from a command.  
+- This plugin is edited originally from [Kiske's give weapon](https://forums.alliedmods.net/showthread.php?t=195476).  
+- Forked updated by Kento https://github.com/rogeraabbccdd/CSGO-GiveWeapons
+- This I got my noob never learned to code hands on it
 
 # This fork adds
 - all the CS:S weapons that were missing to make CS:S compatible
