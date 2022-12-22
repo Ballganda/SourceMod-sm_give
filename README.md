@@ -41,8 +41,8 @@ For example:> `sm_give @all healthshot` gives all player `weapon_healthshot`, in
 
 ## To compile so you can add to your server
 - use the compiler include with the sourcemod file
-- use the source mod website https://www.sourcemod.net/compiler.php
-- note the sourcemod version on your server vs. the compiler version
+- use the SourceMod website https://www.sourcemod.net/compiler.php
+- note the SourceMod version on your server vs. the compiler version
 <details>
   <summary>Click to show</summary>
 	gotcha... MAybe next time though
