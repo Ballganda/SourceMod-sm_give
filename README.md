@@ -40,11 +40,12 @@ Don't look at my code and expect the best I don't know proper ways so I just fin
 For example, `sm_give @all healthshot` gives all player `weapon_healthshot`, including bots.
 
 ## To compile so you can add to your server
+- use the compiler include with the sourcemod file
+- use the source mod website https://www.sourcemod.net/compiler.php
+- note the sourcemod version on your server vs. the compiler version
 <details>
   <summary>Click to show</summary>
-	- use the compiler include with the sourcemod file
-	- use the source mod website https://www.sourcemod.net/compiler.php
-	- note the sourcemod version on your server vs. the compiler version
+	gotcha... MAybe next time though
 </details>
 
 ## Credits
