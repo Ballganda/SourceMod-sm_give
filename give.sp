@@ -18,6 +18,7 @@
 public void OnPluginStart()
 {
 	RegAdminCmd("sm_give", smGive, ADMFLAG_BAN, "<name|#userid> <entityname>");
+	CreateConVar("sm_give_version", PLUGIN_VERSION, NAME, FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY)
 }
 
 // Declare a global char array named "g_entity"
