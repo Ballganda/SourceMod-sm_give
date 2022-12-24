@@ -23,7 +23,7 @@ public void OnPluginStart()
 
 // Declare a global char array named "g_entity"
 // Initialize the array with a list of strings representing different entity names in the game
-// working array stores {{entity name, weaponslot, ammo offset, ammo amount, CSS, CSGO},...}
+// working array stores {{entity name, slot, ammo offset, ammo amount, CSS, CSGO},...}
 char g_entity[][][] = {
 	{"item_cash","-1","-1","-1","0","1"}, //csgo
 	{"item_cutters","-1","-1","1","0","1"}, //csgo
@@ -104,7 +104,7 @@ char g_entity[][][] = {
 };
 
 //Declare global int Get the size of the weapon/item array
-int max_entity = sizeof(g_entity);
+int iSizeg_entity = sizeof(g_entity);
 
 //Declaring the elements for a table to print in console and headers for the columns
 char h_barsingle[] = "--------------------------------------------------------------------------------";
@@ -117,54 +117,33 @@ char h_ammo_reserve[] = "Ammo Reserve";
 
 // Handles the "sm_give" admin command
 public Action smGive(int client, int args) {
-	// Argument check and handling
-	// If there are fewer than 2 arguments, check if the first argument is "list"
-	// If it is, call the smGiveList function with the client as the argument
-	// If it is not, print the usage message to the client
-	if(args < 2) {
-		char sArg[32];
-		GetCmdArg(1, sArg, sizeof(sArg));
-		if(StrEqual(sArg, "list", false)) {
-			smGiveList(client);
-		} 
-		if(StrEqual(sArg, "about", false)) {
-			smGiveAbout(client);
-		}
-		if(!StrEqual(sArg, "list", false) && !StrEqual(sArg, "about", false)) {
-			ReplyToCommand(client, "[SM] Usage: sm_give <name|#userid> <entityname>");
-			ReplyToCommand(client, "[SM] Usage: sm_give list |for %i entity list", max_entity);
-			ReplyToCommand(client, "[SM] Usage: sm_give about |for about info");
-		}
-		return Plugin_Handled;
-	}
-	
 	// Declare and initialize variables for storing command arguments, the entity name, and whether the entity name is valid
-	char sArg[255];
-	char sTargetArg[32];
-	char sEntityName[32], sEntityToGive[32], sEntitySlot[32];
+	char sArg[255]; //what should max size be??
+	char sTargetArg[MAX_TARGET_LENGTH]; 
+	char sEntityName[32], sEntityToGive[32], sEntitySlot[32]; //should set to some max size
 	int iEntitySlot;
 	int iEntityRemove;
 	int iLengthArg1;
 	int iLengthArg2;
-	
-	// Get the full string of command arguments and split it into two parts using BreakString
-	GetCmdArgString(sArg, sizeof(sArg));
-	iLengthArg1 = BreakString(sArg, sTargetArg, sizeof(sTargetArg));
-	
-	// Split the second part of the string out into sEntityName
-	// Start the breaksrtring of sArg at the index of length arg 1 
-	if((iLengthArg2 = BreakString(sArg[iLengthArg1], sEntityName, sizeof(sEntityName))) != -1) {
-		iLengthArg1 += iLengthArg2;
-	}
-	
 	//Create a vaiable to store whether the given entity name was found in the list of avialable entities
-	//initialize with iValid(input valid) false
+	//initialize with iValid (input valid) false
 	bool iValid = false;
 	
-    //Step through g_entity array  
-	for(int i = 0; i < max_entity; ++i) {
+	// Get the full string of command arguments
+	GetCmdArgString(sArg, sizeof(sArg));
+	
+	//Call function to check if function has less than 2 args and handle if help requested
+	ArgsCheck(client, sArg);
+	
+	// Get the length of the first argument to get offset to second arg
+	iLengthArg1 = BreakString(sArg, sTargetArg, sizeof(sTargetArg));
+	
+	BreakString(sArg[iLengthArg1], sEntityName, sizeof(sEntityName));
+	
+    //Validate the weapon/item input arg against g_entity array  
+	for(int i = 0; i < iSizeg_entity; ++i) {
 		// Check if the entity name is contained in the g_entity array
-		if(StrContains(g_entity[i][0], sEntityName) != -1) {
+		if(g_entity[i][iEnableCol]=1 && StrContains(g_entity[i][0], sEntityName) != -1) {
 			//Set valid variable to true because it was found in g_entity
 			iValid = true;
 			// Copy the matching entity name to sEntityToGive
@@ -188,7 +167,7 @@ public Action smGive(int client, int args) {
 	
 	// Declare a char array to store the target name and an int array to store a list of target indices.
 	char sTargetName[MAX_TARGET_LENGTH];
-	int sTargetList[MAXPLAYERS], iTargetCount;
+	int sTargetList[MAXPLAYERS], iTargetCount; //should it be MAXP. + 1?
 	// Declare a boolean to store whether the target name is a multiple-letter abbreviation.
 	bool bTN_IsML;
 	
@@ -225,13 +204,38 @@ public Action smGive(int client, int args) {
 	return Plugin_Handled;
 }
 
+void ArgsCheck(int client, int args) {
+// Argument check and handling
+	// If there are fewer than 2 arguments, check if the first argument is "list"
+	// If it is, call the ListInputOptions function with the client as the argument
+	// If it is not, print the usage message to the client
+	if(args < 2) {
+		char sArgCheck[255]; //should find proper max length to use here
+		GetCmdArg(1, sArgCheck, sizeof(sArgCheck));
+		if(StrEqual(sArgCheck, "list", false)) {
+			ListInputOptions(client);
+		} 
+		if(StrEqual(sArgCheck, "about", false)) {
+			AboutThisPlugin(client);
+		}
+		if(!StrEqual(sArgCheck, "list", false) && !StrEqual(sArgCheck, "about", false)) {
+			ReplyToCommand(client, "[SM] Usage: sm_give <name|#userid> <entityname>");
+			ReplyToCommand(client, "[SM] Usage: sm_give list |for %i entity list", iSizeg_entity);
+			ReplyToCommand(client, "[SM] Usage: sm_give about |for about info");
+		}
+		return Plugin_Handled;
+	} else {
+		return Plugin_Continue;
+	}
+}
+
 //Function to handle the arg that requests viewing the entity list
-void smGiveList(int client) {
+void ListInputOptions(int client) {
 	ReplyToCommand(client, "%s", h_bardouble);
 	ReplyToCommand(client, "| %-21.21s | %-11.11s | %-11.11s | %-24.24s |", h_entity_name, h_weapon_slot, h_ammo_offset, h_ammo_reserve);
 	ReplyToCommand(client, "%s", h_bardouble);
 	
-	for(int i = 0; i < max_entity; ++i) {
+	for(int i = 0; i < iSizeg_entity; ++i) {
 		ReplyToCommand(client, "| %-21.21s | %-11.11s | %-11.11s | %-24.24s |", g_entity[i][0], g_entity[i][1], g_entity[i][2], g_entity[i][3]);
 	}
 	
@@ -242,7 +246,7 @@ void smGiveList(int client) {
 	ReplyToCommand(client, "%s", h_barsingle);
 }
 
-void smGiveAbout(int client) {
+void AboutThisPlugin(int client) {
 	ReplyToCommand(client, "");
 	ReplyToCommand(client, "Plugin Name.......: %s", NAME);
 	ReplyToCommand(client, "Plugin Author.....: %s", AUTHOR);
@@ -257,4 +261,4 @@ public Plugin myinfo = {
 	description = DESCRIPTION,
 	version = PLUGIN_VERSION,
 	url = URL
-};
+}
