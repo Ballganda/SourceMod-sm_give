@@ -15,7 +15,7 @@ Don't look at my code and expect the best I don't know proper ways so I just fin
 - Drops and removes that weapon/item before giving new
 - Code comments for days otherwise i have no clue whats going on
 - Planned - Option to drop but not remove item from game
-- Chat input option * turns out SM does this automatically ex if sm_give is registered then caht !give and /give are automatically registered
+- Chat input option * turns out SM does this automatically ex if sm_give is registered then chat !give and /give are automatically registered
 - Planned - Non admin can give to themself(if enabled)
 - Planned - Cost for giving to yourself option. Can be marked up in cost from base price or free
 - Planned - Plugin engine checking
