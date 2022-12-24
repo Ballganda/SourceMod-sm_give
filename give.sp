@@ -10,7 +10,7 @@
 #define NAME "[CS:S/CS:GO]sm_give Entities | Weapons & Items"
 #define AUTHOR "Kiske, Kento, BallGanda"
 #define DESCRIPTION "Give a weapon or item to a player from a command"
-#define PLUGIN_VERSION "1.1.b7"
+#define PLUGIN_VERSION "1.1.b8"
 #define URL "http://www.sourcemod.net/"
 
 
@@ -18,82 +18,89 @@
 public void OnPluginStart()
 {
 	RegAdminCmd("sm_give", smGive, ADMFLAG_BAN, "<name|#userid> <entityname>");
-	CreateConVar("sm_give_version", PLUGIN_VERSION, NAME, FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY)
+	CreateConVar("sm_give_version", PLUGIN_VERSION, NAME, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 }
 
 // Declare a global char array named "g_entity"
 // Initialize the array with a list of strings representing different entity names in the game
-// working array stores {{entity name, weaponslot, ammo offset, ammo amount},...}
+// working array stores {{entity name, weaponslot, ammo offset, ammo amount, CSS, CSGO},...}
 char g_entity[][][] = {
-	{"item_cutters","-1","-1","1"}, //csgo
-	{"item_defuser","-1","-1","1"},
-	{"item_exosuit","-1","-1","1"}, //csgo
-	{"item_assaultsuit","-1","-1","1"},
-	{"item_heavyassaultsuit","-1","-1","1"}, //csgo
-	{"item_kevlar","-1","-1","1"},
-	{"item_nvgs","-1","-1","1"},
-	{"weapon_ak47","0","2","90"},
-	{"weapon_aug","0","2","90"},
-	{"weapon_awp","0","5","30"},
-	{"weapon_axe","2","-1","1"}, //csgo
-	{"weapon_c4","4","-1","1"},
-	{"weapon_bizon","0","-1","-1"}, //csgo
-	{"weapon_breachcharge","-1","-1","-1"}, //csgo
-	{"weapon_bumpmine","-1","-1","-1"}, //csgo
-	{"weapon_cz75a","1","-1","-1"}, //csgo
-	{"weapon_deagle","1","1","35"},
-	{"weapon_decoy","-1","-1","-1"}, //csgo
-	{"weapon_elite","1","6","120"},
-	{"weapon_famas","0","3","90"},
-	{"weapon_fists","2","-1","-1"}, //csgo
-	{"weapon_fiveseven","1","10","100"},
-	{"weapon_flashbang","3","12","1"},
-	{"weapon_g3sg1","0","2","90"},
-	{"weapon_galil","0","3","90"},
-	{"weapon_galilar","0","-1","-1"}, //csgo
-	{"weapon_glock","1","6","120"},
-	{"weapon_hammer","2","-1","-1"},//csgo
-	{"weapon_healthshot","-1","-1","-1"}, //csgo
-	{"weapon_hegrenade","3","11","1"},
-	{"weapon_hkp2000","-1","-1","-1"}, //csgo
-	{"weapon_incgrenade","-1","-1","-1"}, //csgo
-	{"weapon_knife","2","-1","-1"},
-	{"weapon_knifegg","2","-1","-1"}, //csgo
-	{"weapon_m249","0","4","200"},
-	{"weapon_m3","0","3","90"},
-	{"weapon_m4a1","0","3","90"},
-	{"weapon_m4a1_silencer","0","-1","-1"}, //csgo
-	{"weapon_mac10","0","8","100"},
-	{"weapon_mag7","-1","-1","-1"}, //csgo
-	{"weapon_molotov","3","-1","-1"}, //csgo
-	{"weapon_mp5navy","0","6","120"},
-	{"weapon_mp5sd","-1","-1","-1"}, //csgo
-	{"weapon_mp7","-1","-1","-1"}, //csgo
-	{"weapon_mp9","-1","-1","-1"}, //csgo
-	{"weapon_negev","-1","-1","-1"}, //csgo
-	{"weapon_nova","-1","-1","-1"}, //csgo
-	{"weapon_p228","1","9","52"},
-	{"weapon_p250","-1","-1","-1"}, //csgo
-	{"weapon_p90","0","10","100"},
-	{"weapon_revolver","-1","-1","-1"}, //csgo
-	{"weapon_sawedoff","-1","-1","-1"}, //csgo
-	{"weapon_scar20","-1","-1","-1"}, //csgo
-	{"weapon_scout","0","2","90"},
-	{"weapon_sg550","0","3","90"},
-	{"weapon_sg552","0","3","90"},
-	{"weapon_sg556","-1","-1","-1"}, //csgo
-	{"weapon_shield","-1","-1","-1"}, //csgo
-	{"weapon_smokegrenade","3","13","1"},
-	{"weapon_spanner","2","-1","-1"}, //csgo
-	{"weapon_ssg08","-1","-1","-1"}, //csgo
-	{"weapon_tagrenade","-1","-1","-1"}, //csgo
-	{"weapon_taser","-1","-1","-1"}, //csgo
-	{"weapon_tec9","-1","-1","-1"}, //csgo
-	{"weapon_tmp","0","6","120"},
-	{"weapon_ump45","0","8","120"},
-	{"weapon_usp","1","8","100"},
-	{"weapon_usp_silencer","-1","-1","-1"}, //csgo
-	{"weapon_xm1014","0","7","32"} 
+	{"item_cash","-1","-1","-1","0","1"}, //csgo
+	{"item_cutters","-1","-1","1","0","1"}, //csgo
+	{"item_defuser","-1","-1","1","1","1"},
+	{"item_dogtags","-1","-1","-1","0","1"}, //csgo
+	{"item_exosuit","-1","-1","1","0","1"}, //csgo
+	{"item_assaultsuit","-1","-1","1","1","1"},
+	{"item_heavyassaultsuit","-1","-1","1","0","1"}, //csgo
+	{"item_kevlar","-1","-1","1","1","1"},
+	{"item_nvgs","-1","-1","1","1","1"},
+	{"item_sodacan","-1","-1","1","0","1"},  //csgo
+	{"weapon_ak47","0","2","90","1","1"},
+	{"weapon_aug","0","2","90","1","1"},
+	{"weapon_awp","0","5","30","1","1"},
+	{"weapon_axe","2","-1","1","0","1"}, //csgo
+	{"weapon_c4","4","-1","1","1","1"},
+	{"weapon_bizon","0","-1","-1","0","1"}, //csgo
+	{"weapon_breachcharge","-1","-1","-1","0","1"}, //csgo
+	{"weapon_bumpmine","-1","-1","-1","0","1"}, //csgo
+	{"weapon_cz75a","1","-1","-1","0","1"}, //csgo
+	{"weapon_deagle","1","1","35","1","1"},
+	{"weapon_decoy","-1","-1","-1","0","1"}, //csgo
+	{"weapon_elite","1","6","120","1","1"},
+	{"weapon_famas","0","3","90","1","1"},
+	{"weapon_fists","2","-1","-1","0","1"}, //csgo
+	{"weapon_fiveseven","1","10","100","1","1"},
+	{"weapon_flashbang","3","12","1","1","1"},
+	{"weapon_g3sg1","0","2","90","1","1"},
+	{"weapon_galil","0","3","90","1","0"},
+	{"weapon_galilar","0","-1","-1","0","1"}, //csgo
+	{"weapon_glock","1","6","120","1","1"},
+	{"weapon_hammer","2","-1","-1","0","1"},//csgo
+	{"weapon_healthshot","-1","-1","-1","0","1"}, //csgo
+	{"weapon_hegrenade","3","11","1","1","1"},
+	{"weapon_hkp2000","-1","-1","-1","0","1"}, //csgo
+	{"weapon_incgrenade","-1","-1","-1","0","1"}, //csgo
+	{"weapon_knife","2","-1","-1","1","1"},
+	{"weapon_knife_ghost","2","-1","-1","0","1"}, //csgo
+	{"weapon_knifegg","2","-1","-1","0","1"}, //csgo
+	{"weapon_m249","0","4","200","1","1"},
+	{"weapon_m3","0","3","90","1","0"},
+	{"weapon_m4a1","0","3","90","1","1"},
+	{"weapon_m4a1_silencer","0","-1","-1","0","1"}, //csgo
+	{"weapon_mac10","0","8","100","1","1"},
+	{"weapon_mag7","-1","-1","-1","0","1"}, //csgo
+	{"weapon_molotov","3","-1","-1","0","1"}, //csgo
+	{"weapon_mp5navy","0","6","120","1","0"},
+	{"weapon_mp5sd","-1","-1","-1","0","1"}, //csgo
+	{"weapon_mp7","-1","-1","-1","0","1"}, //csgo
+	{"weapon_mp9","-1","-1","-1","0","1"}, //csgo
+	{"weapon_negev","-1","-1","-1","0","1"}, //csgo
+	{"weapon_nova","-1","-1","-1","0","1"}, //csgo
+	{"weapon_p228","1","9","52","1","0"},
+	{"weapon_p250","-1","-1","-1","0","1"}, //csgo
+	{"weapon_p90","0","10","100","1","1"},
+	{"weapon_revolver","-1","-1","-1","0","1"}, //csgo
+	{"weapon_sawedoff","-1","-1","-1","0","1"}, //csgo
+	{"weapon_scar20","-1","-1","-1","0","1"}, //csgo
+	{"weapon_scout","0","2","90","1","0"},
+	{"weapon_sg550","0","3","90","1","0"},
+	{"weapon_sg552","0","3","90","1","0"},
+	{"weapon_sg556","-1","-1","-1","0","1"}, //csgo
+	{"weapon_shield","-1","-1","-1","0","1"}, //csgo
+	{"weapon_smokegrenade","3","13","1","1","1"},
+	{"weapon_snowball","-1","-1","-1","0","1"}, //csgo
+	{"weapon_spanner","2","-1","-1","0","1"}, //csgo
+	{"weapon_ssg08","-1","-1","-1","0","1"}, //csgo
+	{"weapon_tablet","-1","-1","-1","0","1"}, //csgo
+	{"weapon_tagrenade","-1","-1","-1","0","1"}, //csgo
+	{"weapon_taser","-1","-1","-1","0","1"}, //csgo
+	{"weapon_tec9","-1","-1","-1","0","1"}, //csgo
+	{"weapon_tmp","0","6","120","1","0"},
+	{"weapon_ump45","0","8","120","1","1"},
+	{"weapon_usp","1","8","100","1","1"},
+	{"weapon_usp_silencer","-1","-1","-1","0","1"}, //csgo
+	{"weapon_xm1014","0","7","32","1","1"},
+	{"weapon_zone_repulsor","-1","-1","-1","0","1"}  //csgo
 };
 
 //Declare global int Get the size of the weapon/item array
