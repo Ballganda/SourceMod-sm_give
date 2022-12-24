@@ -19,7 +19,7 @@ Don't look at my code and expect the best I don't know proper ways so I just fin
 - Planned - Non admin can give to themself(if enabled)
 - Planned - Cost for giving to yourself option. Can be marked up in cost from base price or free
 - Planned - Plugin engine checking
-- planned - Separate weapon/item lists per game would help on partial substr input for a few entities and stop successful find in codes list of weapons to things that are not available in current game.
+- Planned - weapon/item available in current game(css/csgo) bool in item array. Helps on partial substr input for a few entities and stops successful finds in codes array of items to things that are not available in current game.
 
 ## Console Commands for admins
 - `sm_give` Gives the usage and options in console.
