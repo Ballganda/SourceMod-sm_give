@@ -15,11 +15,11 @@ Don't look at my code and expect the best I don't know proper ways so I just fin
 - Drops and removes that weapon/item before giving new
 - Code comments for days otherwise i have no clue whats going on
 - Planned - Option to drop but not remove item from game
-- Planned - Chat input option
+- Chat input option * turns out SM does this automatically ex if sm_give is registered then caht !give and /give are automatically registered
 - Planned - Non admin can give to themself(if enabled)
 - Planned - Cost for giving to yourself option. Can be marked up in cost from base price or free
 - Planned - Plugin engine checking
-- Maybe - Separate weapon/item lists per game would help on partial substr input for a few entities
+- planned - Separate weapon/item lists per game would help on partial substr input for a few entities and stop successful find in codes list of weapons to things that are not available in current game.
 
 ## Console Commands for admins
 - `sm_give` Gives the usage and options in console.
@@ -28,7 +28,7 @@ Don't look at my code and expect the best I don't know proper ways so I just fin
 - `sm_give about` Display the myinfo section of the code
 - Planned - `sm_give_version` for showing the version specifically
 ## Chat commands for admin
-- Planned - `!give <target> <entityname>`
+- `!give <target> <entityname>` or silent `/give <target> <entityname>`
 ## Chat commands for non admin
 - Planned - `!<entityname>` Give the weapon/item to the requester if they have enough $$ or free
 - Planned - `!guns` list of guns and prices user can buy(will only have available for Ts the CT guns they can't get from normal buy menu and vice versa)
@@ -37,7 +37,7 @@ Don't look at my code and expect the best I don't know proper ways so I just fin
 - *No need to put weapon_/item_ in the <entityname>*
 - *Partials substrings work if not overlapping other entity name* Example:> `sm_give ball ass` will give all players with `ball` in there name the `item_assaultsuit` 
 - *If in game entity name is not on list plugin needs update*
-For example:> `sm_give @all healthshot` gives all player `weapon_healthshot`, including bots.
+For example:> `sm_give @all healthshot` gives all players `weapon_healthshot`, including bots.
 
 ## To compile so you can add to your server
 - use the compiler include with the sourcemod file
