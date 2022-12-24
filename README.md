@@ -1,3 +1,5 @@
+The test branch will often have incomplete non working code as I use it to save my work and then resume at different locations on different PCs.
+
 Work in progress not a finished work
 
 This will be my first time working with SourcePawn and I have never learned to code in any language. I know a little bit of Windows CMD batch and thats it.
