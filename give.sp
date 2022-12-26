@@ -17,13 +17,19 @@
 // Registers the "sm_give" admin command with the specified parameters
 public void OnPluginStart()
 {
+	if (GetEngineVersion() != Engine_CSS && GetEngineVersion() != Engine_CSGO)
+	{
+		SetFailState("Error plugin only supports CS:S and CS:GO");
+		return ;
+	}
+	
 	RegAdminCmd("sm_give", smGive, ADMFLAG_BAN, "<name|#userid> <entityname>");
 	CreateConVar("sm_give_version", PLUGIN_VERSION, NAME, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 }
 
 // Declare a global char array named "g_entity"
 // Initialize the array with a list of strings representing different entity names in the game
-// working array stores {{entity name, slot, ammo offset, ammo amount, CSS, CSGO},...}
+// array stores {{entity name, slot, ammo offset, ammo amount, available in CSS, available in CSGO},...}
 char g_entity[][][] = {
 	{"item_cash","-1","-1","-1","0","1"}, //csgo
 	{"item_cutters","-1","-1","1","0","1"}, //csgo
@@ -107,27 +113,48 @@ char g_entity[][][] = {
 int iSizeg_entity = sizeof(g_entity);
 
 //Declaring the elements for a table to print in console and headers for the columns
+// Declare and initialize variables for storing command arguments, the entity name, and whether the entity name is valid
+//Global Strings
 char h_barsingle[] = "--------------------------------------------------------------------------------";
 char h_bardouble[] = "================================================================================";
 char h_entity_name[] = "Entity Name";
 char h_weapon_slot[] = "Weapon Slot";
 char h_ammo_offset[] = "Ammo Offset";
 char h_ammo_reserve[] = "Ammo Reserve";
+char sArg[255]; //what should max size be??
+char sTargetArg[MAX_TARGET_LENGTH]; 
+char sEntityName[32], sEntityToGive[32], sEntitySlot[32]; //should set to some max size
+// Declare a char array to store the target name and an int array to store a list of target indices.
+char sTargetName[MAX_TARGET_LENGTH];
+//Global integers
+int iEntitySlot;
+int iEntityRemove;
+int iLengthArg1;
+int iEnableCol;
+int iTargetList[MAXPLAYERS]; //should it be MAXP. + 1?
+int iTargetCount; 
+//Global booleans 
+//Create a vaiable to store whether the given entity name was found in the list of avialable entities
+//initialize with iValid (input valid) false
+bool iValid = false;
+// Declare a boolean to store whether the target name is a multiple-letter abbreviation.
+bool bTN_IsML;
 
+// Set the iEnableCol variable depending on the game
+if (GetEngineVersion() == Engine_CSS) {
+	iEnableCol = 4; // available in CSS column
+}
+else if (GetEngineVersion() == Engine_CSGO) {
+	iEnableCol = 5; // available in CSGO column
+}
+else {
+	// The plugin is not running in either CSS or CSGO
+	SetFailState("Error Neither CS:S or CS:GO detected");
+	return ;
+}
 
 // Handles the "sm_give" admin command
 public Action smGive(int client, int args) {
-	// Declare and initialize variables for storing command arguments, the entity name, and whether the entity name is valid
-	char sArg[255]; //what should max size be??
-	char sTargetArg[MAX_TARGET_LENGTH]; 
-	char sEntityName[32], sEntityToGive[32], sEntitySlot[32]; //should set to some max size
-	int iEntitySlot;
-	int iEntityRemove;
-	int iLengthArg1;
-	int iLengthArg2;
-	//Create a vaiable to store whether the given entity name was found in the list of avialable entities
-	//initialize with iValid (input valid) false
-	bool iValid = false;
 	
 	// Get the full string of command arguments
 	GetCmdArgString(sArg, sizeof(sArg));
@@ -138,12 +165,13 @@ public Action smGive(int client, int args) {
 	// Get the length of the first argument to get offset to second arg
 	iLengthArg1 = BreakString(sArg, sTargetArg, sizeof(sTargetArg));
 	
+	//Use the iLengthArg1 offset to set the second arg to sEntityName
 	BreakString(sArg[iLengthArg1], sEntityName, sizeof(sEntityName));
 	
     //Validate the weapon/item input arg against g_entity array  
 	for(int i = 0; i < iSizeg_entity; ++i) {
 		// Check if the entity name is contained in the g_entity array
-		if(g_entity[i][iEnableCol]=1 && StrContains(g_entity[i][0], sEntityName) != -1) {
+		if(g_entity[i][iEnableCol] == 1 && StrContains(g_entity[i][0], sEntityName) != -1) {
 			//Set valid variable to true because it was found in g_entity
 			iValid = true;
 			// Copy the matching entity name to sEntityToGive
@@ -159,21 +187,12 @@ public Action smGive(int client, int args) {
 	
 	// Error handle for when the input did not find a valid match
 	if(!iValid) {
-		ReplyToCommand(client, "[SM] The entity name (%s) isn't valid", sEntityName);
-		ReplyToCommand(client, "[SM] sm_give list | for entity list");
-		return Plugin_Handled;
+		InvalidEntity(client)
 	}
-	
-	
-	// Declare a char array to store the target name and an int array to store a list of target indices.
-	char sTargetName[MAX_TARGET_LENGTH];
-	int sTargetList[MAXPLAYERS], iTargetCount; //should it be MAXP. + 1?
-	// Declare a boolean to store whether the target name is a multiple-letter abbreviation.
-	bool bTN_IsML;
 	
 	// Process the target string and store the result in the target list and target name variables.
 	// the result is the count of matching targets to the supplied target argument input
-	iTargetCount = ProcessTargetString(sTargetArg, client, sTargetList, MAXPLAYERS, COMMAND_FILTER_ALIVE, sTargetName, sizeof(sTargetName), bTN_IsML);
+	iTargetCount = ProcessTargetString(sTargetArg, client, iTargetList, MAXPLAYERS, COMMAND_FILTER_ALIVE, sTargetName, sizeof(sTargetName), bTN_IsML);
 	
 	//the function returns a target count value less than or equal to 0, it indicates an error.
 	if(iTargetCount <= 0) {
@@ -184,23 +203,43 @@ public Action smGive(int client, int args) {
 	//This is the actual giving of weapons to the members of the target list
 	for (int i = 0; i < iTargetCount; i++) {
 		//get the entity value in the players target slot already
-		iEntityRemove = GetPlayerWeaponSlot(sTargetList[i], iEntitySlot);
-
+		iEntityRemove = GetPlayerWeaponSlot(iTargetList[i], iEntitySlot);
+		
+		//Check that player is alive
 		//Perform check if the target has a weapon/item in the target slot already
-		if(iEntityRemove != -1){
+		if(IsClientAlive(iTargetList[i]) && iEntityRemove != -1){
+
 			//remove the item from the slot of the target player
-			RemovePlayerItem(sTargetList[i], iEntityRemove);
-			//remove only the entity from the player from the map
-			//need to make a cvar to turn this on/off
-			RemoveEntity(iEntityRemove);
+			RemovePlayerItem(iTargetList[i], iEntityRemove);
 		}
 		
 		//add option check chargeing for weapon cvar controlled 
 		
 		//Give the new item to the target player
-		GivePlayerItem(sTargetList[i], sEntityToGive);
+		if(IsClientAlive(iTargetList[i]) {
+			GivePlayerItem(iTargetList[i], sEntityToGive);
+		}
+		
+		// Retrieve the entity number of the item in the player's weapon slot after give
+		int iEntityCheckGive;
+		iEntityCheckGive = GetPlayerWeaponSlot(iTargetList[i], iEntitySlot);
+		char sEntityCheckClassName;
+		GetEdictClassname(iEntityCheckGive, sEntityCheckClassName, sizeof(sEntityCheckClassName));
+		
+		//Remove the weapon from the map if this feature enabled(need to add that cvar)
+		//Checking that entity is in player slot now and class name matches the give classname
+		if(iEntityRemove != -1 && iEntityCheckGive != -1 && sEntityCheckClassName == sEntityToGive) {
+			//player has the weapon given ...probably or they picked up the same weapon from the ground
+			RemoveEntity(iEntityRemove);
+		}
+		
+		//check to detect failed give
+		if(iEntityRemove != -1 && iEntityCheckGive == -1) {
+			//attempt giving the removed entity back to the player
+			GiveEdictToPlayer(iTargetList[i], iEntityRemove);
+		}
+		//There is possibly a hole here in the last 2 checks
 	}
-	
 	return Plugin_Handled;
 }
 
@@ -253,6 +292,12 @@ void AboutThisPlugin(int client) {
 	ReplyToCommand(client, "Plugin Description: %s", DESCRIPTION);
 	ReplyToCommand(client, "Plugin Version....: %s", PLUGIN_VERSION);
 	ReplyToCommand(client, "Plugin URL........: %s", URL);
+}
+
+void InvalidEntity(int client, int sEntityName) {
+	ReplyToCommand(client, "[SM] The entity name (%s) isn't valid", sEntityName);
+	ReplyToCommand(client, "[SM] sm_give list | for entity list");
+	return Plugin_Handled;
 }
 
 public Plugin myinfo = {
