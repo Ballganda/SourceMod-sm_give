@@ -20,10 +20,10 @@ public void OnPluginStart()
 {
 	// Set the iEnableCol variable depending on the game
 	if (GetEngineVersion() == Engine_CSS) {
-		iEnableCol = 4; // available in CSS column
+		iEnableCol = 4; // for available in CSS column of g_entity
 	}
 	else if (GetEngineVersion() == Engine_CSGO) {
-		iEnableCol = 5; // available in CSGO column
+		iEnableCol = 5; // for available in CSGO column of g_entity
 	}
 	else {
 		// The plugin is not running in either CSS or CSGO
@@ -117,18 +117,20 @@ char g_entity[][][] = {
 	{"weapon_zone_repulsor","-1","-1","-1","0","1"}  //csgo
 };
 
-//Declare global int Get the size of the weapon/item array
+//Declare global int iSizeg_entity and Get the size of the weapon/item array
 int iSizeg_entity = sizeof(g_entity);
 
 //Declaring the elements for a table to print in console and headers for the columns
 // Declare and initialize variables for storing command arguments, the entity name, and whether the entity name is valid
 //Global Strings
-char h_barsingle[] = "--------------------------------------------------------------------------------";
-char h_bardouble[] = "================================================================================";
+char h_barsingle[] = "--------------------------------------------------------------------------------------";
+char h_bardouble[] = "======================================================================================";
 char h_entity_name[] = "Entity Name";
 char h_weapon_slot[] = "Weapon Slot";
 char h_ammo_offset[] = "Ammo Offset";
 char h_ammo_reserve[] = "Ammo Reserve";
+char h_css[] = "CS:S";
+char h_csgo[] = "CS:GO";
 char sArg[255]; //what should max size be??
 char sTargetArg[MAX_TARGET_LENGTH]; 
 char sEntityName[32], sEntityToGive[32], sEntitySlot[32]; //should set to some max size
@@ -182,7 +184,7 @@ public Action smGive(int client, int args) {
 	
 	// Error handle for when the input did not find a valid match
 	if(!iValid) {
-		InvalidEntity(client);
+		InvalidEntity(client, sEntityName);
 	}
 	
 	// Process the target string and store the result in the target list and target name variables.
@@ -191,8 +193,7 @@ public Action smGive(int client, int args) {
 	
 	//the function returns a target count value less than or equal to 0, it indicates an error.
 	if(iTargetCount <= 0) {
-		ReplyToTargetError(client, iTargetCount);
-		return Plugin_Handled;
+		InvalidTarget(client, sTargetArg)
 	}
 	
 	//This is the actual giving of weapons to the members of the target list
@@ -207,8 +208,6 @@ public Action smGive(int client, int args) {
 			//remove the item from the slot of the target player
 			RemovePlayerItem(iTargetList[i], iEntityRemove);
 		}
-		
-		//add option check chargeing for weapon cvar controlled 
 		
 		//Give the new item to the target player
 		if(IsPlayerAlive(iTargetList[i])) {
@@ -229,17 +228,22 @@ public Action smGive(int client, int args) {
 		}
 		
 		//check to detect failed give
-		//if(iEntityRemove != -1 && iEntityCheckGive == -1) {
-			////attempt giving the removed entity back to the player
-			// GiveEntityToPlayer(iTargetList[i], iEntityRemove); //sudo code
-		//}
-		//There is possibly a hole here in the last 2 checks
+		if(iEntityRemove != -1 && iEntityCheckGive == -1) {
+			//attempt giving the removed entity back to the player
+			EquipPlayerWeapon(iTargetList[i], iEntityRemove);
+			//float fClientEyePosition[3];
+			//GetClientEyePosition(iTargetList[i], fClientEyePosition);
+			//TeleportEntity(iEntityRemove,fClientEyePosition);
+			//AcceptEntityInput(iEntityRemove, "Use", iTargetList[i],iTargetList[i]);
+		}
+		//There is possibly a hole here in the last 2 checks and leaves the removed gun on the gound and possibly
+		//the player empty handed.
 	}
 	return Plugin_Handled;
 }
 
+/ Argument check and handling
 void ArgsCheck(int client, int args) {
-// Argument check and handling
 	// If there are fewer than 2 arguments, check if the first argument is "list"
 	// If it is, call the ListInputOptions function with the client as the argument
 	// If it is not, print the usage message to the client
@@ -266,11 +270,11 @@ void ArgsCheck(int client, int args) {
 //Function to handle the arg that requests viewing the entity list
 void ListInputOptions(int client) {
 	ReplyToCommand(client, "%s", h_bardouble);
-	ReplyToCommand(client, "| %-21.21s | %-11.11s | %-11.11s | %-24.24s |", h_entity_name, h_weapon_slot, h_ammo_offset, h_ammo_reserve);
+	ReplyToCommand(client, "| %-21.21s | %-11.11s | %-11.11s | %-12.12s | %-4.4s | %-5.5s |", h_entity_name, h_weapon_slot, h_ammo_offset, h_ammo_reserve, h_css, h_csgo);
 	ReplyToCommand(client, "%s", h_bardouble);
 	
 	for(int i = 0; i < iSizeg_entity; ++i) {
-		ReplyToCommand(client, "| %-21.21s | %-11.11s | %-11.11s | %-24.24s |", g_entity[i][0], g_entity[i][1], g_entity[i][2], g_entity[i][3]);
+		ReplyToCommand(client, "| %-21.21s | %-11.11s | %-11.11s | %-12.12s | %-4.4s | %-5.5s |", g_entity[i][0], g_entity[i][1], g_entity[i][2], g_entity[i][3], g_entity[i][4], g_entity[i][5]);
 	}
 	
 	ReplyToCommand(client, "%s", h_barsingle);
@@ -289,9 +293,14 @@ void AboutThisPlugin(int client) {
 	ReplyToCommand(client, "Plugin URL........: %s", URL);
 }
 
-void InvalidEntity(int client, int sEntityInvalidName) {
+void InvalidEntity(int client, char sEntityInvalidName) {
 	ReplyToCommand(client, "[SM] The entity name (%s) isn't valid", sEntityInvalidName);
 	ReplyToCommand(client, "[SM] sm_give list | for entity list");
+	return Plugin_Handled;
+}
+
+void InvalidTarget(int client, char sTargetInvalidName) {
+	ReplyToCommand(client, "[SM] The target name (%s) isn't valid to give at this time", sTargetInvalidName);
 	return Plugin_Handled;
 }
 
