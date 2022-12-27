@@ -13,13 +13,21 @@
 #define PLUGIN_VERSION "1.1.b8"
 #define URL "http://www.sourcemod.net/"
 
+int iEnableCol;
 
 // Registers the "sm_give" admin command with the specified parameters
 public void OnPluginStart()
 {
-	if (GetEngineVersion() != Engine_CSS && GetEngineVersion() != Engine_CSGO)
-	{
-		SetFailState("Error plugin only supports CS:S and CS:GO");
+	// Set the iEnableCol variable depending on the game
+	if (GetEngineVersion() == Engine_CSS) {
+		iEnableCol = 4; // available in CSS column
+	}
+	else if (GetEngineVersion() == Engine_CSGO) {
+		iEnableCol = 5; // available in CSGO column
+	}
+	else {
+		// The plugin is not running in either CSS or CSGO
+		SetFailState("Error Neither CS:S or CS:GO detected");
 		return ;
 	}
 	
@@ -130,7 +138,6 @@ char sTargetName[MAX_TARGET_LENGTH];
 int iEntitySlot;
 int iEntityRemove;
 int iLengthArg1;
-int iEnableCol;
 int iTargetList[MAXPLAYERS]; //should it be MAXP. + 1?
 int iTargetCount; 
 //Global booleans 
@@ -140,18 +147,6 @@ bool iValid = false;
 // Declare a boolean to store whether the target name is a multiple-letter abbreviation.
 bool bTN_IsML;
 
-// Set the iEnableCol variable depending on the game
-if (GetEngineVersion() == Engine_CSS) {
-	iEnableCol = 4; // available in CSS column
-}
-else if (GetEngineVersion() == Engine_CSGO) {
-	iEnableCol = 5; // available in CSGO column
-}
-else {
-	// The plugin is not running in either CSS or CSGO
-	SetFailState("Error Neither CS:S or CS:GO detected");
-	return ;
-}
 
 // Handles the "sm_give" admin command
 public Action smGive(int client, int args) {
@@ -187,7 +182,7 @@ public Action smGive(int client, int args) {
 	
 	// Error handle for when the input did not find a valid match
 	if(!iValid) {
-		InvalidEntity(client)
+		InvalidEntity(client);
 	}
 	
 	// Process the target string and store the result in the target list and target name variables.
@@ -207,7 +202,7 @@ public Action smGive(int client, int args) {
 		
 		//Check that player is alive
 		//Perform check if the target has a weapon/item in the target slot already
-		if(IsClientAlive(iTargetList[i]) && iEntityRemove != -1){
+		if(IsPlayerAlive(iTargetList[i]) && iEntityRemove != -1){
 
 			//remove the item from the slot of the target player
 			RemovePlayerItem(iTargetList[i], iEntityRemove);
@@ -216,7 +211,7 @@ public Action smGive(int client, int args) {
 		//add option check chargeing for weapon cvar controlled 
 		
 		//Give the new item to the target player
-		if(IsClientAlive(iTargetList[i]) {
+		if(IsPlayerAlive(iTargetList[i])) {
 			GivePlayerItem(iTargetList[i], sEntityToGive);
 		}
 		
@@ -234,10 +229,10 @@ public Action smGive(int client, int args) {
 		}
 		
 		//check to detect failed give
-		if(iEntityRemove != -1 && iEntityCheckGive == -1) {
-			//attempt giving the removed entity back to the player
-			GiveEdictToPlayer(iTargetList[i], iEntityRemove);
-		}
+		//if(iEntityRemove != -1 && iEntityCheckGive == -1) {
+			////attempt giving the removed entity back to the player
+			// GiveEntityToPlayer(iTargetList[i], iEntityRemove); //sudo code
+		//}
 		//There is possibly a hole here in the last 2 checks
 	}
 	return Plugin_Handled;
@@ -294,8 +289,8 @@ void AboutThisPlugin(int client) {
 	ReplyToCommand(client, "Plugin URL........: %s", URL);
 }
 
-void InvalidEntity(int client, int sEntityName) {
-	ReplyToCommand(client, "[SM] The entity name (%s) isn't valid", sEntityName);
+void InvalidEntity(int client, int sEntityInvalidName) {
+	ReplyToCommand(client, "[SM] The entity name (%s) isn't valid", sEntityInvalidName);
 	ReplyToCommand(client, "[SM] sm_give list | for entity list");
 	return Plugin_Handled;
 }
