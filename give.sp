@@ -1,5 +1,6 @@
 #include <sourcemod>
 #include <sdktools>
+#include <cstrike>
 
 //insert semicolon after every statement
 #pragma semicolon 1
@@ -20,13 +21,14 @@ public void OnPluginStart()
 {
 	// Set the iEnableCol variable depending on the game
 	if (GetEngineVersion() == Engine_CSS) {
-		iEnableCol = 4; // for available in CSS column of g_entity
+		iEnableCol =4; // for available in CSS column of g_entity
 	}
 	else if (GetEngineVersion() == Engine_CSGO) {
-		iEnableCol = 5; // for available in CSGO column of g_entity
+		iEnableCol =5; // for available in CSGO column of g_entity
 	}
 	else {
 		// The plugin is not running in either CSS or CSGO
+		iEnableCol =-1;
 		SetFailState("Error Neither CS:S or CS:GO detected");
 		return ;
 	}
@@ -138,7 +140,7 @@ char sEntityName[32], sEntityToGive[32], sEntitySlot[32]; //should set to some m
 char sTargetName[MAX_TARGET_LENGTH];
 //Global integers
 int iEntitySlot;
-int iEntityRemove;
+int iEntityRemove = -1;
 int iLengthArg1;
 int iTargetList[MAXPLAYERS]; //should it be MAXP. + 1?
 int iTargetCount; 
@@ -157,7 +159,42 @@ public Action smGive(int client, int args) {
 	GetCmdArgString(sArg, sizeof(sArg));
 	
 	//Call function to check if function has less than 2 args and handle if help requested
-	ArgsCheck(client, sArg);
+	//ArgsCheck(client, args, sArg);
+	if(args < 2) {
+		char sArgCheck[255]; //should find proper max length to use here
+		GetCmdArg(1, sArgCheck, sizeof(sArgCheck));
+		if(StrEqual(sArgCheck, "list", false)) {
+			//ListInputOptions(client);
+			ReplyToCommand(client, "%s", h_bardouble);
+			ReplyToCommand(client, "| %-21.21s | %-11.11s | %-11.11s | %-12.12s | %-4.4s | %-5.5s |", h_entity_name, h_weapon_slot, h_ammo_offset, h_ammo_reserve, h_css, h_csgo);
+			ReplyToCommand(client, "%s", h_bardouble);
+			
+			for(int i = 0; i < iSizeg_entity; ++i) {
+				ReplyToCommand(client, "| %-21.21s | %-11.11s | %-11.11s | %-12.12s | %-4.4s | %-5.5s |", g_entity[i][0], g_entity[i][1], g_entity[i][2], g_entity[i][3], g_entity[i][4], g_entity[i][5]);
+			}
+			
+			ReplyToCommand(client, "%s", h_barsingle);
+			ReplyToCommand(client, "*No need to put weapon_/item_ in the <entityname>*");
+			ReplyToCommand(client, "*Partials substrings work if not overlapping other entity name*");
+			ReplyToCommand(client, "*If in game entity name is not on list plugin needs update*");
+			ReplyToCommand(client, "%s", h_barsingle);
+		} 
+		if(StrEqual(sArgCheck, "about", false)) {
+			//AboutThisPlugin(client);
+			ReplyToCommand(client, "");
+			ReplyToCommand(client, "Plugin Name.......: %s", NAME);
+			ReplyToCommand(client, "Plugin Author.....: %s", AUTHOR);
+			ReplyToCommand(client, "Plugin Description: %s", DESCRIPTION);
+			ReplyToCommand(client, "Plugin Version....: %s", PLUGIN_VERSION);
+			ReplyToCommand(client, "Plugin URL........: %s", URL);
+		}
+		if(!StrEqual(sArgCheck, "list", false) && !StrEqual(sArgCheck, "about", false)) {
+			ReplyToCommand(client, "[SM] Usage: sm_give <name|#userid> <entityname>");
+			ReplyToCommand(client, "[SM] Usage: sm_give list |for %i entity list", iSizeg_entity);
+			ReplyToCommand(client, "[SM] Usage: sm_give about |for about info");
+		}
+		return Plugin_Handled;
+	}
 	
 	// Get the length of the first argument to get offset to second arg
 	iLengthArg1 = BreakString(sArg, sTargetArg, sizeof(sTargetArg));
@@ -168,7 +205,7 @@ public Action smGive(int client, int args) {
     //Validate the weapon/item input arg against g_entity array  
 	for(int i = 0; i < iSizeg_entity; ++i) {
 		// Check if the entity name is contained in the g_entity array
-		if(g_entity[i][iEnableCol] == 1 && StrContains(g_entity[i][0], sEntityName) != -1) {
+		if(StrEqual(g_entity[i][iEnableCol], "1", true) && StrContains(g_entity[i][0], sEntityName) != -1) {
 			//Set valid variable to true because it was found in g_entity
 			iValid = true;
 			// Copy the matching entity name to sEntityToGive
@@ -184,7 +221,10 @@ public Action smGive(int client, int args) {
 	
 	// Error handle for when the input did not find a valid match
 	if(!iValid) {
-		InvalidEntity(client, sEntityName);
+		//InvalidEntity(client, sEntityName);
+		ReplyToCommand(client, "[SM] The entity name (%s) isn't valid", sEntityName);
+		ReplyToCommand(client, "[SM] sm_give list | for entity list");
+		return Plugin_Handled;
 	}
 	
 	// Process the target string and store the result in the target list and target name variables.
@@ -193,7 +233,9 @@ public Action smGive(int client, int args) {
 	
 	//the function returns a target count value less than or equal to 0, it indicates an error.
 	if(iTargetCount <= 0) {
-		InvalidTarget(client, sTargetArg)
+		//InvalidTarget(client, sTargetArg);
+		ReplyToCommand(client, "[SM] The target name (%s) isn't valid to give at this time", sTargetArg);
+		return Plugin_Handled;
 	}
 	
 	//This is the actual giving of weapons to the members of the target list
@@ -206,101 +248,20 @@ public Action smGive(int client, int args) {
 		if(IsPlayerAlive(iTargetList[i]) && iEntityRemove != -1){
 
 			//remove the item from the slot of the target player
-			RemovePlayerItem(iTargetList[i], iEntityRemove);
+			//RemovePlayerItem(iTargetList[i], iEntityRemove);
+			CS_DropWeapon(iTargetList[i], iEntityRemove, false);
+			//RemoveEntity(iEntityRemove);
 		}
 		
+				
 		//Give the new item to the target player
 		if(IsPlayerAlive(iTargetList[i])) {
 			GivePlayerItem(iTargetList[i], sEntityToGive);
 		}
-		
-		// Retrieve the entity number of the item in the player's weapon slot after give
-		int iEntityCheckGive;
-		iEntityCheckGive = GetPlayerWeaponSlot(iTargetList[i], iEntitySlot);
-		char sEntityCheckClassName;
-		GetEdictClassname(iEntityCheckGive, sEntityCheckClassName, sizeof(sEntityCheckClassName));
-		
-		//Remove the weapon from the map if this feature enabled(need to add that cvar)
-		//Checking that entity is in player slot now and class name matches the give classname
-		if(iEntityRemove != -1 && iEntityCheckGive != -1 && sEntityCheckClassName == sEntityToGive) {
-			//player has the weapon given ...probably or they picked up the same weapon from the ground
-			RemoveEntity(iEntityRemove);
-		}
-		
-		//check to detect failed give
-		if(iEntityRemove != -1 && iEntityCheckGive == -1) {
-			//attempt giving the removed entity back to the player
-			EquipPlayerWeapon(iTargetList[i], iEntityRemove);
-			//float fClientEyePosition[3];
-			//GetClientEyePosition(iTargetList[i], fClientEyePosition);
-			//TeleportEntity(iEntityRemove,fClientEyePosition);
-			//AcceptEntityInput(iEntityRemove, "Use", iTargetList[i],iTargetList[i]);
-		}
-		//There is possibly a hole here in the last 2 checks and leaves the removed gun on the gound and possibly
-		//the player empty handed.
-	}
-	return Plugin_Handled;
-}
-
-/ Argument check and handling
-void ArgsCheck(int client, int args) {
-	// If there are fewer than 2 arguments, check if the first argument is "list"
-	// If it is, call the ListInputOptions function with the client as the argument
-	// If it is not, print the usage message to the client
-	if(args < 2) {
-		char sArgCheck[255]; //should find proper max length to use here
-		GetCmdArg(1, sArgCheck, sizeof(sArgCheck));
-		if(StrEqual(sArgCheck, "list", false)) {
-			ListInputOptions(client);
-		} 
-		if(StrEqual(sArgCheck, "about", false)) {
-			AboutThisPlugin(client);
-		}
-		if(!StrEqual(sArgCheck, "list", false) && !StrEqual(sArgCheck, "about", false)) {
-			ReplyToCommand(client, "[SM] Usage: sm_give <name|#userid> <entityname>");
-			ReplyToCommand(client, "[SM] Usage: sm_give list |for %i entity list", iSizeg_entity);
-			ReplyToCommand(client, "[SM] Usage: sm_give about |for about info");
-		}
-		return Plugin_Handled;
-	} else {
-		return Plugin_Continue;
-	}
-}
-
-//Function to handle the arg that requests viewing the entity list
-void ListInputOptions(int client) {
-	ReplyToCommand(client, "%s", h_bardouble);
-	ReplyToCommand(client, "| %-21.21s | %-11.11s | %-11.11s | %-12.12s | %-4.4s | %-5.5s |", h_entity_name, h_weapon_slot, h_ammo_offset, h_ammo_reserve, h_css, h_csgo);
-	ReplyToCommand(client, "%s", h_bardouble);
 	
-	for(int i = 0; i < iSizeg_entity; ++i) {
-		ReplyToCommand(client, "| %-21.21s | %-11.11s | %-11.11s | %-12.12s | %-4.4s | %-5.5s |", g_entity[i][0], g_entity[i][1], g_entity[i][2], g_entity[i][3], g_entity[i][4], g_entity[i][5]);
 	}
-	
-	ReplyToCommand(client, "%s", h_barsingle);
-	ReplyToCommand(client, "*No need to put weapon_/item_ in the <entityname>*");
-	ReplyToCommand(client, "*Partials substrings work if not overlapping other entity name*");
-	ReplyToCommand(client, "*If in game entity name is not on list plugin needs update*");
-	ReplyToCommand(client, "%s", h_barsingle);
-}
-
-void AboutThisPlugin(int client) {
-	ReplyToCommand(client, "");
-	ReplyToCommand(client, "Plugin Name.......: %s", NAME);
-	ReplyToCommand(client, "Plugin Author.....: %s", AUTHOR);
-	ReplyToCommand(client, "Plugin Description: %s", DESCRIPTION);
-	ReplyToCommand(client, "Plugin Version....: %s", PLUGIN_VERSION);
-	ReplyToCommand(client, "Plugin URL........: %s", URL);
-}
-
-void InvalidEntity(int client, char sEntityInvalidName) {
-	ReplyToCommand(client, "[SM] The entity name (%s) isn't valid", sEntityInvalidName);
-	ReplyToCommand(client, "[SM] sm_give list | for entity list");
-	return Plugin_Handled;
-}
-
-void InvalidTarget(int client, char sTargetInvalidName) {
-	ReplyToCommand(client, "[SM] The target name (%s) isn't valid to give at this time", sTargetInvalidName);
+	iEntityRemove = -1;
+	iValid = false;
 	return Plugin_Handled;
 }
 
