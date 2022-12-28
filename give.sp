@@ -14,6 +14,7 @@
 #define PLUGIN_VERSION "1.1.b8"
 #define URL "http://www.sourcemod.net/"
 
+//needs to be set before OnPluginStart function
 int iEnableCol;
 
 // Registers the "sm_give" admin command with the specified parameters
@@ -21,10 +22,10 @@ public void OnPluginStart()
 {
 	// Set the iEnableCol variable depending on the game
 	if (GetEngineVersion() == Engine_CSS) {
-		iEnableCol =4; // for available in CSS column of g_entity
+		iEnableCol = 4; // for available in CSS column of g_entity
 	}
 	else if (GetEngineVersion() == Engine_CSGO) {
-		iEnableCol =5; // for available in CSGO column of g_entity
+		iEnableCol = 5; // for available in CSGO column of g_entity
 	}
 	else {
 		// The plugin is not running in either CSS or CSGO
@@ -123,17 +124,17 @@ char g_entity[][][] = {
 int iSizeg_entity = sizeof(g_entity);
 
 //Declaring the elements for a table to print in console and headers for the columns
-// Declare and initialize variables for storing command arguments, the entity name, and whether the entity name is valid
+//Declare and initialize variables for storing command arguments, the entity name, and whether the entity name is valid
 //Global Strings
-char h_barsingle[] = "--------------------------------------------------------------------------------------";
-char h_bardouble[] = "======================================================================================";
+char h_barsingle[] = "-----------------------------------------------------------------------------------";
+char h_bardouble[] = "===================================================================================";
 char h_entity_name[] = "Entity Name";
 char h_weapon_slot[] = "Weapon Slot";
 char h_ammo_offset[] = "Ammo Offset";
 char h_ammo_reserve[] = "Ammo Reserve";
 char h_css[] = "CS:S";
 char h_csgo[] = "CS:GO";
-char sArg[255]; //what should max size be??
+char //sArg[255]; //what should max size be??
 char sTargetArg[MAX_TARGET_LENGTH]; 
 char sEntityName[32], sEntityToGive[32], sEntitySlot[32]; //should set to some max size
 // Declare a char array to store the target name and an int array to store a list of target indices.
@@ -156,7 +157,7 @@ bool bTN_IsML;
 public Action smGive(int client, int args) {
 	
 	// Get the full string of command arguments
-	GetCmdArgString(sArg, sizeof(sArg));
+	//GetCmdArgString(sArg, sizeof(sArg));
 	
 	//Call function to check if function has less than 2 args and handle if help requested
 	//ArgsCheck(client, args, sArg);
@@ -196,11 +197,15 @@ public Action smGive(int client, int args) {
 		return Plugin_Handled;
 	}
 	
-	// Get the length of the first argument to get offset to second arg
-	iLengthArg1 = BreakString(sArg, sTargetArg, sizeof(sTargetArg));
 	
+	GetCmdArg(1, sTargetArg, sizeof(sTargetArg));
+	iLengthArg1 = sizeof(sTargetArg);
+	// Get the length of the first argument to get offset to second arg
+	//iLengthArg1 = BreakString(sArg, sTargetArg, sizeof(sTargetArg));
+	
+	GetCmdArg(2, sEntityName, sizeof(sEntityName));
 	//Use the iLengthArg1 offset to set the second arg to sEntityName
-	BreakString(sArg[iLengthArg1], sEntityName, sizeof(sEntityName));
+	//BreakString(sArg[iLengthArg1], sEntityName, sizeof(sEntityName));
 	
     //Validate the weapon/item input arg against g_entity array  
 	for(int i = 0; i < iSizeg_entity; ++i) {
@@ -253,7 +258,6 @@ public Action smGive(int client, int args) {
 			//RemoveEntity(iEntityRemove);
 		}
 		
-				
 		//Give the new item to the target player
 		if(IsPlayerAlive(iTargetList[i])) {
 			GivePlayerItem(iTargetList[i], sEntityToGive);
