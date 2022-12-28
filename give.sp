@@ -5,37 +5,68 @@
 //insert semicolon after every statement
 #pragma semicolon 1
 
-//Enforce the new syntax in sourcemod 1.7+
+//Enforce the newer syntax in sourcemod 1.7+
 #pragma newdecls required
 
 #define NAME "[CS:S/CS:GO]sm_give Entities | Weapons & Items"
 #define AUTHOR "Kiske, Kento, BallGanda"
 #define DESCRIPTION "Give a weapon or item to a player from a command"
-#define PLUGIN_VERSION "1.1.b8"
+#define PLUGIN_VERSION "1.1.b9"
 #define URL "http://www.sourcemod.net/"
 
 //needs to be set before OnPluginStart function
-int iEnableCol;
+int iEnableCol = null;
+ConVar g_cvEnabled = null;
+bool g_bEnabled = false;
+ConVar g_cvRemoveItems = null;
 
-// Registers the "sm_give" admin command with the specified parameters
+
 public void OnPluginStart()
 {
+	//Checks the game version and sets the column to check in the weapon/item array
 	// Set the iEnableCol variable depending on the game
 	if (GetEngineVersion() == Engine_CSS) {
 		iEnableCol = 2; // for available in CSS column of g_entity
-	}
-	else if (GetEngineVersion() == Engine_CSGO) {
+	} else if (GetEngineVersion() == Engine_CSGO) {
 		iEnableCol = 3; // for available in CSGO column of g_entity
-	}
-	else {
+	} else {
 		// The plugin is not running in either CSS or CSGO
-		iEnableCol =-1;
 		SetFailState("Error Neither CS:S or CS:GO detected");
 		return ;
 	}
 	
+	// Registers the "sm_give" admin command with the specified parameters
 	RegAdminCmd("sm_give", smGive, ADMFLAG_BAN, "<name|#userid> <entityname>");
-	CreateConVar("sm_give_version", PLUGIN_VERSION, NAME, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	//public plugin version can be see from outside
+	CreateConVar("sm_give_version", PLUGIN_VERSION, NAME, FCVAR_DONTRECORD|FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	
+	//Setup cvars that are for customizing the plugin
+	g_cvEnabled = CreateConVar("sm_give_enable", "1", "sm_give Enable=1 Disable=0", FCVAR_NOTIFY|FCVAR_DONTRECORD);
+	g_cvRemoveItems = CreateConVar("sm_give_removeolditem", "0", "Enabled removes items from map instead of dropping Enable=1 Disable=0");
+	
+	//setup a hook for if the value of g_cvEnabled is changed
+	g_cvEnabled.AddChangeHook(ConVarChange_sm_give_enable);
+	
+	//Set a boolean frothe eable that will be controlled by the sm_give_enable cvar in a function 
+	//Set the plugin to enabled initially as a boolean. the autoexec config may change the setting and get detected by the hook
+	g_bEnabled = true;
+	
+	//will create a file named cfg/sourcemod/sm_give.cfg
+	//this execs the file if already created
+	AutoExecConfig(true, "sm_give");
+}
+
+//Function that runs if the enabled cvar is changed
+//I think this should be in any plugin that wants to be able to turn on and off on cvar change real time
+public void ConVarChange_sm_give_enable(ConVar convar, char[] oldValue, char[] newValue)
+{
+	int iNewVal = StringToInt(newValue);
+	
+	if (g_bEnabled && iNewVal != 1) {
+		g_bEnabled = false;
+	} else if (!g_bEnabled && iNewVal == 1) {
+		g_bEnabled = true;		
+	}
 }
 
 // Declare a global char array named "g_entity"
@@ -144,14 +175,20 @@ int iTargetList[MAXPLAYERS]; //should it be MAXP. + 1?
 int iTargetCount; 
 //Global booleans 
 //Create a vaiable to store whether the given entity name was found in the list of avialable entities
-//initialize with iValid (input valid) false
-bool iValid = false;
+//initialize with bValid (input valid) false
+bool bValid = false;
 // Declare a boolean to store whether the target name is a multiple-letter abbreviation.
 bool bTN_IsML;
 
 
 // Handles the "sm_give" admin command
 public Action smGive(int client, int args) {
+	
+	//checks if the plugin is enabled by cvar
+	if(!g_bEnabled) {
+		ReplyToCommand(client, "[sm_give] is installed but Disabled");
+		return plugin_handled
+	}
 	
 	if(args < 2) {
 		char sArgCheck[255]; //should find proper max length to use here
@@ -196,7 +233,7 @@ public Action smGive(int client, int args) {
 		// Check if the entity name is contained in the g_entity array
 		if(StrEqual(g_entity[i][iEnableCol], "1", true) && StrContains(g_entity[i][0], sEntityName) != -1) {
 			//Set valid variable to true because it was found in g_entity
-			iValid = true;
+			bValid = true;
 			// Copy the matching entity name to sEntityToGive
 			strcopy(sEntityToGive, sizeof(sEntityToGive), g_entity[i][0]);
 			// Copy the matching entity name to sEntitySlot
@@ -209,7 +246,7 @@ public Action smGive(int client, int args) {
 	}
 	
 	// Error handle for when the input did not find a valid match
-	if(!iValid) {
+	if(!bValid) {
 		ReplyToCommand(client, "[SM] The entity name (%s) isn't valid", sEntityName);
 		ReplyToCommand(client, "[SM] sm_give list | for entity list");
 		return Plugin_Handled;
@@ -230,14 +267,17 @@ public Action smGive(int client, int args) {
 		//get the entity value in the players target slot already
 		iEntityRemove = GetPlayerWeaponSlot(iTargetList[i], iEntitySlot);
 		
-		//Check that player is alive
+		//Check drop or remove setting and that player is alive
 		//Perform check if the target has a weapon/item in the target slot already
-		if(IsPlayerAlive(iTargetList[i]) && iEntityRemove != -1){
-
-			//remove the item from the slot of the target player
+		if(g_cvRemoveItems == 0 && IsPlayerAlive(iTargetList[i]) && iEntityRemove != -1){
+			//drop the weapon that in current in the target slot to ground
 			CS_DropWeapon(iTargetList[i], iEntityRemove, false);
-			//RemovePlayerItem(iTargetList[i], iEntityRemove);
-			//RemoveEntity(iEntityRemove);
+		}
+		
+		if(g_cvRemoveItems == 1 && IsPlayerAlive(iTargetList[i]) && iEntityRemove != -1){
+			//remove the item from the target slot of the target player and remove from map
+			RemovePlayerItem(iTargetList[i], iEntityRemove);
+			RemoveEntity(iEntityRemove);
 		}
 		
 		//Give the new item to the target player
@@ -247,7 +287,7 @@ public Action smGive(int client, int args) {
 	
 	}
 	iEntityRemove = -1;
-	iValid = false;
+	bValid = false;
 	return Plugin_Handled;
 }
 
