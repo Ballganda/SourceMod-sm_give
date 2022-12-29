@@ -223,8 +223,7 @@ public Action smGive(int client, int args) {
 	for (int i = 0; i < iTargetCount; i++) {
 		iEntityRemove = GetPlayerWeaponSlot(iTargetList[i], iEntitySlot);
 		
-		//using cvar to decide to drop or remove 
-		//if(GetConVarInt(g_cvRemoveItems) == 0 && IsPlayerAlive(iTargetList[i]) && iEntityRemove != -1){
+		//using cvar to decide to drop or remove in this and the next if statement.
 		if(!g_cvRemoveItems.BoolValue && IsPlayerAlive(iTargetList[i]) && iEntityRemove != -1){
 			//drop the weapon that in current in the target slot to ground
 			CS_DropWeapon(iTargetList[i], iEntityRemove, false);
@@ -240,11 +239,8 @@ public Action smGive(int client, int args) {
 		if(IsPlayerAlive(iTargetList[i])) {
 			GivePlayerItem(iTargetList[i], sEntityToGive);
 		}
-	
+		iEntityRemove = -1;
 	}
-	//reset these but needed to test if neccessary
-	iEntityRemove = -1;
-	bValid = false;
 	return Plugin_Handled;
 }
 
