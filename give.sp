@@ -15,14 +15,13 @@
 #define URL "http://www.sourcemod.net/"
 
 //needs to be set before OnPluginStart function
-int iEnableCol = null;
+int iEnableCol = -1;
 ConVar g_cvEnabled = null;
 bool g_bEnabled = false;
 ConVar g_cvRemoveItems = null;
 
 
-public void OnPluginStart()
-{
+public void OnPluginStart() {
 	//Checks the game version and sets the column to check in the weapon/item array
 	// Set the iEnableCol variable depending on the game
 	if (GetEngineVersion() == Engine_CSS) {
@@ -38,10 +37,10 @@ public void OnPluginStart()
 	// Registers the "sm_give" admin command with the specified parameters
 	RegAdminCmd("sm_give", smGive, ADMFLAG_BAN, "<name|#userid> <entityname>");
 	//public plugin version can be see from outside
-	CreateConVar("sm_give_version", PLUGIN_VERSION, NAME, FCVAR_DONTRECORD|FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_give_version", PLUGIN_VERSION, NAME, FCVAR_DONTRECORD|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	
 	//Setup cvars that are for customizing the plugin
-	g_cvEnabled = CreateConVar("sm_give_enable", "1", "sm_give Enable=1 Disable=0", FCVAR_NOTIFY|FCVAR_DONTRECORD);
+	g_cvEnabled = CreateConVar("sm_give_enable", "1", "sm_give Enable=1 Disable=0");
 	g_cvRemoveItems = CreateConVar("sm_give_removeolditem", "0", "Enabled removes items from map instead of dropping Enable=1 Disable=0");
 	
 	//setup a hook for if the value of g_cvEnabled is changed
@@ -58,8 +57,7 @@ public void OnPluginStart()
 
 //Function that runs if the enabled cvar is changed
 //I think this should be in any plugin that wants to be able to turn on and off on cvar change real time
-public void ConVarChange_sm_give_enable(ConVar convar, char[] oldValue, char[] newValue)
-{
+public void ConVarChange_sm_give_enable(ConVar convar, char[] oldValue, char[] newValue) {
 	int iNewVal = StringToInt(newValue);
 	
 	if (g_bEnabled && iNewVal != 1) {
@@ -170,7 +168,7 @@ char sTargetName[MAX_TARGET_LENGTH];
 //Global integers
 int iEntitySlot;
 int iEntityRemove = -1;
-int iLengthArg1;
+//int iLengthArg1;
 int iTargetList[MAXPLAYERS]; //should it be MAXP. + 1?
 int iTargetCount; 
 //Global booleans 
@@ -187,7 +185,7 @@ public Action smGive(int client, int args) {
 	//checks if the plugin is enabled by cvar
 	if(!g_bEnabled) {
 		ReplyToCommand(client, "[sm_give] is installed but Disabled");
-		return plugin_handled
+		return Plugin_Handled;
 	}
 	
 	if(args < 2) {
@@ -225,7 +223,7 @@ public Action smGive(int client, int args) {
 	}
 	
 	GetCmdArg(1, sTargetArg, sizeof(sTargetArg));
-	iLengthArg1 = sizeof(sTargetArg);
+	//iLengthArg1 = sizeof(sTargetArg);
 	GetCmdArg(2, sEntityName, sizeof(sEntityName));
 	
     //Validate the weapon/item input arg against g_entity array  
@@ -269,12 +267,12 @@ public Action smGive(int client, int args) {
 		
 		//Check drop or remove setting and that player is alive
 		//Perform check if the target has a weapon/item in the target slot already
-		if(g_cvRemoveItems == 0 && IsPlayerAlive(iTargetList[i]) && iEntityRemove != -1){
+		if(GetConVarInt(g_cvRemoveItems) == 0 && IsPlayerAlive(iTargetList[i]) && iEntityRemove != -1){
 			//drop the weapon that in current in the target slot to ground
 			CS_DropWeapon(iTargetList[i], iEntityRemove, false);
 		}
 		
-		if(g_cvRemoveItems == 1 && IsPlayerAlive(iTargetList[i]) && iEntityRemove != -1){
+		if(GetConVarInt(g_cvRemoveItems) == 1 && IsPlayerAlive(iTargetList[i]) && iEntityRemove != -1){
 			//remove the item from the target slot of the target player and remove from map
 			RemovePlayerItem(iTargetList[i], iEntityRemove);
 			RemoveEntity(iEntityRemove);
