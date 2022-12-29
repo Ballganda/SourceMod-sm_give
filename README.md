@@ -16,24 +16,24 @@ Don't look at my code and expect the best I don't know proper ways so I just fin
 - entity checking if player has a weapon/item in the slot the plugin is trying to give to. 
 - Drops and removes that weapon/item before giving new
 - Code comments for days otherwise i have no clue whats going on
-- Planned - Option to drop but not remove item from game
+- Option to drop but not remove item from game
 - Chat input option * turns out SM does this automatically ex if sm_give is registered then chat !give and /give are automatically registered
-- Planned - Non admin can give to themself(if enabled)
-- Planned - Cost for giving to yourself option. Can be marked up in cost from base price or free
-- Planned - Plugin engine checking
-- Planned - weapon/item available in current game(css/csgo) bool in item array. Helps on partial substr input for a few entities and stops successful finds in codes array of items to things that are not available in current game.
+- ~~Planned - Non admin can give to themself(if enabled)~~ separate plugin
+- ~~Planned - Cost for giving to yourself option. Can be marked up in cost from base price or free~~ separate plugin
+- Plugin engine checking
+- weapon/item available in current game(css/csgo) bool in item array. Helps on partial substr input for a few entities and stops successful finds in codes array of items to things that are not available in current game.
 
 ## Console Commands for admins
 - `sm_give` Gives the usage and options in console.
 - `sm_give <target> <entityname>` Give weapon or item to user.
 - `sm_give list` Display in console a table of all the weapon names,weapon slot,ammo offset, ammo reserve
 - `sm_give about` Display the myinfo section of the code
-- Planned - `sm_give_version` for showing the version specifically
+- ~~`sm_give_version` for showing the version specifically~~ added to the about command
 ## Chat commands for admin
 - `!give <target> <entityname>` or silent `/give <target> <entityname>`
 ## Chat commands for non admin
-- Planned - `!<entityname>` Give the weapon/item to the requester if they have enough $$ or free
-- Planned - `!guns` list of guns and prices user can buy(will only have available for Ts the CT guns they can't get from normal buy menu and vice versa)
+- ~~Planned - `!<entityname>` Give the weapon/item to the requester if they have enough $$ or free~~ separate plugin
+- ~~Planned - `!guns` list of guns and prices user can buy(will only have available for Ts the CT guns they can't get from normal buy menu and vice versa)~~ separate plugin
 
 ## Items
 - *No need to put weapon_/item_ in the <entityname>*
