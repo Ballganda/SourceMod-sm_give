@@ -39,7 +39,6 @@ Don't look at my code and expect the best I don't know proper ways so I just fin
 - *No need to put weapon_/item_ in the <entityname>*
 - *Partials substrings work if not overlapping other entity name* Example:> `sm_give ball ass` will give all players with `ball` in there name the `item_assaultsuit` 
 - *If in game entity name is not on list plugin needs update*
-For example:> `sm_give @all healthshot` gives all players `weapon_healthshot`, including bots.
 
 ## To compile so you can add to your server
 - use the compiler include with the sourcemod file
