@@ -6,7 +6,8 @@ This will be my first time working with SourcePawn and I have never learned to c
 Don't look at my code and expect the best I don't know proper ways so I just find a way.
 
 # CS:S / CSGO Give Weapons
-- Give a weapon or item to a player from a command.  
+- Give a weapon or item to a player from a command.
+- After reviewing a lot of code I think pRED* version in SM Super Commands may have been the first https://forums.alliedmods.net/showthread.php?p=498802
 - This plugin is edited originally from [Kiske's give weapon](https://forums.alliedmods.net/showthread.php?t=195476).  
 - Forked updated by Kento https://github.com/rogeraabbccdd/CSGO-GiveWeapons
 - Then I got my noob never learned to code hands on it...
@@ -50,5 +51,6 @@ Don't look at my code and expect the best I don't know proper ways so I just fin
 </details>
 
 ## Credits
+- pRED* version in SM Super Commands https://forums.alliedmods.net/showthread.php?p=498802
 - [Kiske](https://forums.alliedmods.net/showthread.php?t=195476), who made the original plugin.
 - Kento https://github.com/rogeraabbccdd/CSGO-GiveWeapons
