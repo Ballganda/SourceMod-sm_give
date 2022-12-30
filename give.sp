@@ -8,7 +8,7 @@
 #define NAME "[CS:S/CS:GO]sm_give Entities | Weapons & Items"
 #define AUTHOR "pRED*, Kiske, Kento, BallGanda"
 #define DESCRIPTION "Give a weapon or item to a player from a command"
-#define PLUGIN_VERSION "1.1.b9"
+#define PLUGIN_VERSION "1.1.b10"
 #define URL "http://www.sourcemod.net/"
 
 //Global Variables needed before OnPluginStart
