@@ -6,7 +6,7 @@
 #pragma newdecls required
 
 #define NAME "[CS:S/CS:GO]sm_give Entities | Weapons & Items"
-#define AUTHOR "Kiske, Kento, BallGanda"
+#define AUTHOR "pRED*, Kiske, Kento, BallGanda"
 #define DESCRIPTION "Give a weapon or item to a player from a command"
 #define PLUGIN_VERSION "1.1.b9"
 #define URL "http://www.sourcemod.net/"
@@ -14,7 +14,9 @@
 //Global Variables needed before OnPluginStart
 int iEnableCol = -1;
 ConVar g_cvEnabled = null;
+ConVar g_cvDropItems = null;
 ConVar g_cvRemoveItems = null;
+
 
 public void OnPluginStart() {
 	//Checks the game version and sets the column to check in the weapon/item array
@@ -31,7 +33,8 @@ public void OnPluginStart() {
 	CreateConVar("sm_give_version", PLUGIN_VERSION, NAME, FCVAR_DONTRECORD|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	
 	g_cvEnabled = CreateConVar("sm_give_enable", "1", "sm_give Enable=1 Disable=0");
-	g_cvRemoveItems = CreateConVar("sm_give_removeolditem", "0", "Enabled removes items from map instead of dropping Enable=1 Disable=0");
+	g_cvDropItems = CreateConVar("sm_give_drop", "1", "Enabled forces dropping weapon in hand before give Enable=1 Disable=0");
+	g_cvRemoveItems = CreateConVar("sm_give_removeolditem", "0", "Enabled removes items from map Enable=1 Disable=0");
 	
 	//will create a file named cfg/sourcemod/sm_give.cfg
 	//this execs the file if already created
@@ -139,7 +142,7 @@ public Action smGive(int client, int args) {
 		char h_weapon_slot[] = "Weapon Slot";
 		char h_css[] = "CS:S";
 		char h_csgo[] = "CS:GO";
-		char sArgCheck[255]; //should find proper max length to use here
+		char sArgCheck[MAX_TARGET_LENGTH];
 		GetCmdArg(1, sArgCheck, sizeof(sArgCheck));
 		if(StrEqual(sArgCheck, "list", false)) {
 			ReplyToCommand(client, "%s", h_bardouble);
@@ -174,11 +177,9 @@ public Action smGive(int client, int args) {
 	}
 	
 	char sTargetArg[MAX_TARGET_LENGTH];
+	char sEntityNameArg[32]; //should set to some max size
 	GetCmdArg(1, sTargetArg, sizeof(sTargetArg));
-	//int iLengthArg1;
-	//iLengthArg1 = sizeof(sTargetArg);
-	char sEntityName[32]; //should set to some max size
-	GetCmdArg(2, sEntityName, sizeof(sEntityName));
+	GetCmdArg(2, sEntityNameArg, sizeof(sEntityNameArg));
 	
     //Validate the weapon/item input arg against g_entity array
 	bool bValid = false;
@@ -186,7 +187,7 @@ public Action smGive(int client, int args) {
 	char sEntitySlot[32]; //should set to some max size
 	int iEntitySlot;
 	for(int i = 0; i < iSizeg_entity; ++i) {
-		if(StrEqual(g_entity[i][iEnableCol], "1", true) && StrContains(g_entity[i][0], sEntityName) != -1) {
+		if(StrEqual(g_entity[i][iEnableCol], "1", true) && StrContains(g_entity[i][0], sEntityNameArg) != -1) {
 			bValid = true;
 			strcopy(sEntityToGive, sizeof(sEntityToGive), g_entity[i][0]);
 			strcopy(sEntitySlot, sizeof(sEntitySlot), g_entity[i][1]);
@@ -197,7 +198,7 @@ public Action smGive(int client, int args) {
 	
 	// Error handle for when the input did not find a valid match
 	if(!bValid) {
-		ReplyToCommand(client, "[SM] The entity name (%s) isn't valid", sEntityName);
+		ReplyToCommand(client, "[SM] The entity name (%s) isn't valid", sEntityNameArg);
 		ReplyToCommand(client, "[SM] sm_give list | for entity list");
 		return Plugin_Handled;
 	}
@@ -206,14 +207,22 @@ public Action smGive(int client, int args) {
 	// the result is the count of matching targets to the supplied target argument input
 	// BallGanda- I don't know how this function ProcessTargetString works really at this time. Need to research it
 	// Declare a boolean to store whether the target name is a multiple-letter abbreviation.
-	bool bTN_IsML;
-	char sTargetName[MAX_TARGET_LENGTH];
-	int iTargetList[MAXPLAYERS]; //should it be MAXP. + 1?
 	int iTargetCount;
-	iTargetCount = ProcessTargetString(sTargetArg, client, iTargetList, MAXPLAYERS, COMMAND_FILTER_ALIVE, sTargetName, sizeof(sTargetName), bTN_IsML);
+	int iTargetList[MAXPLAYERS]; //should it be MAXP. + 1?
+	char sTargetName[MAX_TARGET_LENGTH];
+	bool bTN_IsML;
+	iTargetCount = ProcessTargetString(sTargetArg,
+										client,
+										iTargetList,
+										MAXPLAYERS,
+										COMMAND_FILTER_ALIVE,
+										sTargetName,
+										sizeof(sTargetName),
+										bTN_IsML);
 	
 	//the function returns a target count value less than or equal to 0, it indicates an error.
-	if(iTargetCount <= 0) {
+	if(iTargetCount < 1) {
+		ReplyToTargetError(client, iTargetCount);
 		ReplyToCommand(client, "[SM] The target name (%s) isn't valid to give at this time", sTargetArg);
 		return Plugin_Handled;
 	}
@@ -224,13 +233,13 @@ public Action smGive(int client, int args) {
 		iEntityRemove = GetPlayerWeaponSlot(iTargetList[i], iEntitySlot);
 		
 		//using cvar to decide to drop or remove in this and the next if statement.
-		if(!g_cvRemoveItems.BoolValue && IsPlayerAlive(iTargetList[i]) && iEntityRemove != -1){
-			//drop the weapon that in current in the target slot to ground
+		if(g_cvDropItems.BoolValue && IsPlayerAlive(iTargetList[i]) && iEntityRemove != -1){
+			//drop weapon if in the target slot to ground
 			CS_DropWeapon(iTargetList[i], iEntityRemove, false);
 		}
 		
 		if(g_cvRemoveItems.BoolValue && IsPlayerAlive(iTargetList[i]) && iEntityRemove != -1){
-			//remove the item from the target slot of the target player and remove from map
+			//remove the item from the target player and remove from map
 			RemovePlayerItem(iTargetList[i], iEntityRemove);
 			RemoveEntity(iEntityRemove);
 		}
