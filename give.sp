@@ -11,6 +11,14 @@
 #define PLUGIN_VERSION "1.1.b10"
 #define URL "http://www.sourcemod.net/"
 
+public Plugin myinfo = {
+	name = NAME,
+	author = AUTHOR,
+	description = DESCRIPTION,
+	version = PLUGIN_VERSION,
+	url = URL
+}
+
 //Global Variables needed before OnPluginStart
 int iEnableCol = -1;
 ConVar g_cvEnabled = null;
@@ -142,33 +150,32 @@ public Action smGive(int client, int args) {
 		char sArgCheck[MAX_TARGET_LENGTH];
 		GetCmdArg(1, sArgCheck, sizeof(sArgCheck));
 		if(StrEqual(sArgCheck, "list", false)) {
-			ReplyToCommand(client, "%s", h_bardouble);
-			ReplyToCommand(client, "| %-21.21s | %-11.11s | %-4.4s | %-5.5s |", h_entity_name, h_weapon_slot, h_css, h_csgo);
-			ReplyToCommand(client, "%s", h_bardouble);
+			PrintToConsole(client, "%s", h_bardouble);
+			PrintToConsole(client, "| %-21.21s | %-11.11s | %-4.4s | %-5.5s |", h_entity_name, h_weapon_slot, h_css, h_csgo);
+			PrintToConsole(client, "%s", h_bardouble);
 			
 			for(int i = 0; i < iSizeg_entity; ++i) {
-				ReplyToCommand(client, "| %-21.21s | %-11.11s | %-4.4s | %-5.5s |", g_entity[i][0], g_entity[i][1], g_entity[i][2], g_entity[i][3]);
+				PrintToConsole(client, "| %-21.21s | %-11.11s | %-4.4s | %-5.5s |", g_entity[i][0], g_entity[i][1], g_entity[i][2], g_entity[i][3]);
 			}
 			
-			ReplyToCommand(client, "%s", h_barsingle);
-			ReplyToCommand(client, "*No need to put weapon_/item_ in the <entityname>*");
-			ReplyToCommand(client, "*Partials substrings work if not overlapping other entity name*");
-			ReplyToCommand(client, "*If in game entity name is not on list plugin needs update*");
-			ReplyToCommand(client, "%s", h_barsingle);
+			PrintToConsole(client, "%s", h_barsingle);
+			PrintToConsole(client, "*No need to put weapon_/item_ in the <entityname>*");
+			PrintToConsole(client, "*Partials substrings work if not overlapping other entity name*");
+			PrintToConsole(client, "*If in game entity name is not on list plugin needs update*");
+			PrintToConsole(client, "%s", h_barsingle);
 		} 
 		if(StrEqual(sArgCheck, "about", false)) {
-			ReplyToCommand(client, "");
-			ReplyToCommand(client, "Plugin Name.......: %s", NAME);
-			ReplyToCommand(client, "Plugin Author.....: %s", AUTHOR);
-			ReplyToCommand(client, "Plugin Description: %s", DESCRIPTION);
-			ReplyToCommand(client, "Plugin Version....: %s", PLUGIN_VERSION);
-			ReplyToCommand(client, "Plugin URL........: %s", URL);
+			PrintToConsole(client, "");
+			PrintToConsole(client, "Plugin Name.......: %s", NAME);
+			PrintToConsole(client, "Plugin Author.....: %s", AUTHOR);
+			PrintToConsole(client, "Plugin Description: %s", DESCRIPTION);
+			PrintToConsole(client, "Plugin Version....: %s", PLUGIN_VERSION);
+			PrintToConsole(client, "Plugin URL........: %s", URL);
 		}
 		if(!StrEqual(sArgCheck, "list", false) && !StrEqual(sArgCheck, "about", false)) {
-			ReplyToCommand(client, "[SM] Usage: sm_give <name|#userid> <entityname>");
-			ReplyToCommand(client, "[SM] Usage: <name> target can be @all @ct @t");
-			ReplyToCommand(client, "[SM] Usage: sm_give list |for %i entity list", iSizeg_entity);
-			ReplyToCommand(client, "[SM] Usage: sm_give about |for about info");
+			ReplyToCommand(client, "[SM] Usage: sm_give <name|#userid|@all|@ct|@t> <entityname>");
+			ReplyToCommand(client, "[SM] Usage: sm_give list |for %i entity list in console", iSizeg_entity);
+			ReplyToCommand(client, "[SM] Usage: sm_give about |for about info in console");
 		}
 		return Plugin_Handled;
 	}
@@ -248,12 +255,4 @@ public Action smGive(int client, int args) {
 		iEntityRemove = -1;
 	}
 	return Plugin_Handled;
-}
-
-public Plugin myinfo = {
-	name = NAME,
-	author = AUTHOR,
-	description = DESCRIPTION,
-	version = PLUGIN_VERSION,
-	url = URL
 }
