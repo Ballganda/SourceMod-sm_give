@@ -17,7 +17,6 @@ ConVar g_cvEnabled = null;
 ConVar g_cvDropItems = null;
 ConVar g_cvRemoveItems = null;
 
-
 public void OnPluginStart() {
 	//Checks the game version and sets the column to check in the weapon/item array
 	if (GetEngineVersion() == Engine_CSS) {
@@ -125,10 +124,8 @@ char g_entity[][][] = {
 //Declare global int iSizeg_entity and Get the size of the weapon/item array
 int iSizeg_entity = sizeof(g_entity);
 
-
 // Handles the "sm_give" admin command
 public Action smGive(int client, int args) {
-	
 	//checks if the plugin is enabled by cvar
 	if(!g_cvEnabled.BoolValue) {
 		ReplyToCommand(client, "[sm_give] is installed but Disabled");
