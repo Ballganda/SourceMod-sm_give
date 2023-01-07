@@ -39,7 +39,7 @@ public void OnPluginStart() {
 	RegAdminCmd("sm_give", smGive, ADMFLAG_BAN, "<name|#userid> <entityname>");
 	CreateConVar("sm_give_version", PLUGIN_VERSION, NAME, FCVAR_DONTRECORD|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	
-	g_cvEnabled = CreateConVar("sm_give_enable", "1", "sm_give <1|0>");
+	g_cvEnabled = CreateConVar("sm_give_enable", "1", "sm_give Enables the plugin <1|0>");
 	g_cvDropItems = CreateConVar("sm_give_drop", "1", "sm_give_drop Enabled forces dropping weapon in hand before give <1|0>");
 	g_cvRemoveItems = CreateConVar("sm_give_removeolditem", "0", "sm_give_removeolditem Enabled removes items from map <1|0>");
 	
