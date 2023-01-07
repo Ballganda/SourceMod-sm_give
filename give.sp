@@ -235,7 +235,7 @@ public Action smGive(int client, int args) {
 	
 	//the function returns a target count value less than or equal to 0, it indicates an error.
 	if(iTargetCount < 1) {
-		ReplyToTargetError(client, iTargetCount);
+		//ReplyToTargetError(client, iTargetCount);
 		ReplyToCommand(client, "[SM] The target name <%s> isn't valid to give at this time", sTargetArg);
 		return Plugin_Handled;
 	}
