@@ -9,7 +9,7 @@
 #define AUTHOR "pRED*, Kiske, Kento, BallGanda"
 #define DESCRIPTION "Give a weapon or item to a player from a command"
 #define PLUGIN_VERSION "1.1.b10"
-#define URL "http://www.sourcemod.net/"
+#define URL "https://github.com/Ballganda/SourceMod-sm_give"
 
 public Plugin myinfo = {
 	name = NAME,
@@ -49,7 +49,7 @@ public void OnPluginStart() {
 }
 
 // Declare a global char array named "g_entity"
-// array stores {{entity name, slot, available in CSS, available in CSGO},...}
+// array stores {{col 0 entity name, col 1 slot, col 2 available in CSS, col 3 available in CSGO},...}
 char g_entity[][][] = {
 	{"item_cash","-1","0","1"}, //csgo
 	{"item_cutters","-1","0","1"}, //csgo
@@ -141,15 +141,16 @@ public Action smGive(int client, int args) {
 	}
 	
 	if(args < 2) {
-		char h_barsingle[] = "-------------------------------------------------------------";
-		char h_bardouble[] = "=============================================================";
-		char h_entity_name[] = "Entity Name";
-		char h_weapon_slot[] = "Weapon Slot";
-		char h_css[] = "CS:S";
-		char h_csgo[] = "CS:GO";
+		
 		char sArgCheck[MAX_TARGET_LENGTH];
 		GetCmdArg(1, sArgCheck, sizeof(sArgCheck));
 		if(StrEqual(sArgCheck, "list", false)) {
+			char h_barsingle[] = "------------------------------------------------------";
+			char h_bardouble[] = "======================================================";
+			char h_entity_name[] = "Entity Name";
+			char h_weapon_slot[] = "Weapon Slot";
+			char h_css[] = "CS:S";
+			char h_csgo[] = "CS:GO";
 			PrintToConsole(client, "%s", h_bardouble);
 			PrintToConsole(client, "| %-21.21s | %-11.11s | %-4.4s | %-5.5s |", h_entity_name, h_weapon_slot, h_css, h_csgo);
 			PrintToConsole(client, "%s", h_bardouble);
@@ -201,15 +202,23 @@ public Action smGive(int client, int args) {
 	}
 	
 	// Error handle for when the input did not find a valid match
+	//if the entity is real but not in list go ahead and accept it
 	if(!bValid) {
-		ReplyToCommand(client, "[SM] The entity name (%s) isn't valid", sEntityNameArg);
-		ReplyToCommand(client, "[SM] sm_give list | for entity list");
+		int iEntityArgCheck;
+		iEntityArgCheck = CreateEntityByName(sEntityNameArg, -1);
+		if(iEntityArgCheck == -1) {
+			ReplyToCommand(client, "[SM] The entity name <%s> is not valid", sEntityNameArg);
+			ReplyToCommand(client, "[SM] sm_give list | for known entity list");
+		}
+		if(iEntityArgCheck > 0) {
+			ReplyToCommand(client, "[SM] The entity name <%s> is valid but not in the give list", sEntityNameArg);
+			ReplyToCommand(client, "[SM] sm_give list | for known entity list");
+			RemoveEntity(iEntityArgCheck);
+		}
 		return Plugin_Handled;
 	}
 	
-	// Process the target string and store the result in the target list and target name variables.
-	// the result is the count of matching targets to the supplied target argument input
-	// BallGanda- I don't know how this function ProcessTargetString works really at this time. Need to research it
+	// Process the target string and store the result in the target list count
 	// Declare a boolean to store whether the target name is a multiple-letter abbreviation.
 	int iTargetCount;
 	int iTargetList[MAXPLAYERS]; //should it be MAXP. + 1?
@@ -227,7 +236,7 @@ public Action smGive(int client, int args) {
 	//the function returns a target count value less than or equal to 0, it indicates an error.
 	if(iTargetCount < 1) {
 		ReplyToTargetError(client, iTargetCount);
-		ReplyToCommand(client, "[SM] The target name (%s) isn't valid to give at this time", sTargetArg);
+		ReplyToCommand(client, "[SM] The target name <%s> isn't valid to give at this time", sTargetArg);
 		return Plugin_Handled;
 	}
 	
