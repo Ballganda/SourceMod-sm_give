@@ -40,8 +40,8 @@ public void OnPluginStart() {
 	CreateConVar("sm_give_version", PLUGIN_VERSION, NAME, FCVAR_DONTRECORD|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	
 	g_cvEnabled = CreateConVar("sm_give_enable", "1", "sm_give <1|0>");
-	g_cvDropItems = CreateConVar("sm_give_drop", "1", "Enabled forces dropping weapon in hand before give <1|0>");
-	g_cvRemoveItems = CreateConVar("sm_give_removeolditem", "0", "Enabled removes items from map <1|0>");
+	g_cvDropItems = CreateConVar("sm_give_drop", "1", "sm_give_drop Enabled forces dropping weapon in hand before give <1|0>");
+	g_cvRemoveItems = CreateConVar("sm_give_removeolditem", "0", "sm_give_removeolditem Enabled removes items from map <1|0>");
 	
 	//will create a file named cfg/sourcemod/sm_give.cfg
 	//this execs the file if already created
@@ -51,6 +51,7 @@ public void OnPluginStart() {
 // Declare a global char array named "g_entity"
 // array stores {{col 0 entity name, col 1 slot, col 2 available in CSS, col 3 available in CSGO},...}
 char g_entity[][][] = {
+	// column 0 |  1 | 2 | 3 |
 	{"item_cash","-1","0","1"}, //csgo
 	{"item_cutters","-1","0","1"}, //csgo
 	{"item_defuser","-1","1","1"},
