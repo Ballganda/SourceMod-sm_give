@@ -5,7 +5,7 @@ Work in progress not a finished work
 This will be my first time working with SourcePawn and I have never learned to code in any language. I know a little bit of Windows CMD batch and thats it.
 Don't look at my code and expect the best I don't know proper ways so I just find a way.
 
-# CS:S / CSGO Give Weapons
+# CS:S Give Weapons
 - Give a weapon or item to a player from a command.
 - After reviewing a lot of code I think pRED* version in SM Super Commands may have been the first https://forums.alliedmods.net/showthread.php?p=498802
 - This plugin is edited originally from [Kiske's give weapon](https://forums.alliedmods.net/showthread.php?t=195476).  
@@ -22,7 +22,7 @@ Don't look at my code and expect the best I don't know proper ways so I just fin
 - ~~Planned - Non admin can give to themself(if enabled)~~ separate plugin
 - ~~Planned - Cost for giving to yourself option. Can be marked up in cost from base price or free~~ separate plugin
 - Plugin engine checking
-- weapon/item available in current game(css/csgo) bool in item array. Helps on partial substr input for a few entities and stops successful finds in codes array of items to things that are not available in current game.
+- CSGO support removed
 
 ## Console Commands for admins
 - `sm_give` Gives the usage and options in console.
